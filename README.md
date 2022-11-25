@@ -12,7 +12,9 @@ In addition, show the results below
 |-|-|-|-|-|
 |RepVGG|A0|88.23%|-|-|
 |RepOpt|B1|90.91%|-|-|
-|Repopt|A0|-|-|-|
+|Repopt|A0-(Hyper-serach-AAAI-dataset)|89.42%|-|-|
+|Repopt|A0-(Hyper-serach-CF100-dataset)|89.84%|-|-|
+
 
 ## Train Repopt-A0
 For the scale file of A0 isn't released, so I train the scale file. Run the code in terminal below:
