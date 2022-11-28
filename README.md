@@ -26,7 +26,7 @@ python3 -m torch.distributed.launch --nproc_per_node 1 --master_port 12349 main_
 
 Through observing the picture number of each class, the long-tailed feature is obvious.
 
-![the distribution of the dataset](pic\the_dist_of_the_dataset.png)
+![the distribution of the dataset](./pic/the_dist_of_the_dataset.png)
 
 **The statistical data:**
 
