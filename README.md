@@ -22,3 +22,22 @@ For the scale file of A0 isn't released, so I train the scale file. Run the code
 python3 -m torch.distributed.launch --nproc_per_node 1 --master_port 12349 main_repopt.py --data-path /data/AAAI/Awesome-Backbones/datasets --arch RepOpt-VGG-A0-hs --batch-size 32 --tag search --opts TRAIN.EPOCHS 240 TRAIN.BASE_LR 0.1 TRAIN.WEIGHT_DECAY 4e-5 TRAIN.WARMUP_EPOCHS 10 MODEL.LABEL_SMOOTHING 0.1 DATA.DATASET imagenet 
 ```
 
+## Something about the dataset
+
+Through observing the picture number of each class, the long-tailed feature is obvious.
+
+![the distribution of the dataset](E:\qinhaiyan\Study\Courses\Senior\AAAI-challenge\pic\the_dist_of_the_dataset.png)
+
+**The statistical data:**
+
+|       | num         |
+| ----: | ----------- |
+| count | 89.000000   |
+|  mean | 561.831461  |
+|   std | 809.292792  |
+|   min | 8.000000    |
+|   25% | 135.000000  |
+|   50% | 271.000000  |
+|   75% | 502.000000  |
+|   max | 5121.000000 |
+
