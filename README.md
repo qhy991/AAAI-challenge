@@ -45,3 +45,13 @@ Through observing the picture number of each class, the long-tailed feature is o
 |   75% | 502.000000  |
 |   max | 5121.000000 |
 
+**The resolution of dataset**
+
+Not only is the number of each class unbalanced, but also the resolution of the pictures vary greatly. As the image below shows: 
+
+![the resolution of picture](./pic/The_resolution_of_the_dataset.png)
+
+
+
+The channel of the picture is 3. Among all 50003 pictures, there are 11133 different resolution. Most of them are smaller than 200*200.
+
