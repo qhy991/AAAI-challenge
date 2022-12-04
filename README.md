@@ -1,4 +1,9 @@
 # AAAI-challenge
+
+[TOC]
+
+
+
 The content of training for the contest
 
 For the .onnx files are bigger than the upload limit, I upload the files to Beihang Cloud. [Links](https://bhpan.buaa.edu.cn:443/link/B1A7ECE0C3F03ADDED6FF56F3A7A1897)
@@ -55,7 +60,17 @@ Not only is the number of each class unbalanced, but also the resolution of the 
 
 The channel of the picture is 3. Among all 50003 pictures, there are 11133 different resolution. Most of them are smaller than 200*200.
 
-**The accuracy of each class**
+## The accuracy of each class
+
+if you want to reproduce the result, you can run 
+
+```sh
+python3 -m torch.distributed.launch --nproc_per_node 1 --master_port 12349 main.py --arch RepVGG-A0 --data-path /data/AAAI/datasets --batch-size 32 --tag test --eval --resume /home/qinhaiyan/RepVGG/result/VGG-A0/RepVGG-A0/train_EQLv2/best_ckpt.pth  --opts DATA.DATASET imagenet DATA.IMG_SIZE 112 --out /home/qinhaiyan/RepVGG/result/VGG-A0/RepVGG-A0/train_EQLv2 
+```
+
+and then run this code.
+
+### Validation Dataset
 
 This table show the accuracy of each class with ascending trend. The validation number means the number of each class in validation dataset. The sampler ratio is 0.1,  except the class 81, I add all 8 picture as both validation dataset and training dataset.
 
@@ -151,6 +166,8 @@ This table show the accuracy of each class with ascending trend. The validation 
 |    56 | 1.000000 | 1              |
 |    88 | 1.000000 | 15             |
 
+### Training Dataset
+
 In addition, I test the model’s training performance in training dataset：
 
 | class | num in training dataset | True | ACC      |
@@ -244,3 +261,52 @@ In addition, I test the model’s training performance in training dataset：
 |    58 |                      98 |   98 | 1.000000 |
 |    34 |                      79 |   79 | 1.000000 |
 |    37 |                     100 |  100 | 1.000000 |
+
+### EQLv2 Trainnig Dataset 
+
+==Need to update.==
+
+## The analysis of model and performance on different hardware
+
+### Model Analysis
+
+| Type      | num blocks | width multiplier      | Flops    | Params   | Max Memory Cost          |
+| --------- | ---------- | --------------------- | -------- | -------- | ------------------------ |
+| RepVGG-A0 | [2,4,14,1] | [0.75,0.75,0.75,2.5]  | 202.337M | 7.142M   | 2261.25M(stage4.Conv2d)  |
+| RepVGG-N0 | [2,4,14,1] | [1.0,1.0,1.0,1.0]     | 268.466M | 9.784M   | 1192.5M(stage4.Conv2d)   |
+| RepVGG-N1 | [2,4,14,1] | [0.25,0.25,0.25,0.25] | 67.117M  | 621.369K | 245.4375M(stage0.Conv2d) |
+| RepVGG-N2 | [2,4,14,1] | [0.5,0.5,0.5,0.5]     | 134.233M | 2.459M   | 490.875M(stage0.Conv2d)  |
+| RepVGG-N3 | [2,4,14,1] | [0.25,0.25,0.25,0.1]  | 67.540M  | 877.113K | 328.5M(stage4.Conv2d)    |
+| RepVGG-N4 | [2,4,14,1] | [0.5,0.5,0.5,1.0]     | 134.515M | 2.777M   | 616.5M(stage4.Conv2d)    |
+| RepVGG-M0 | [2,2,2,2]  | [1.0,1.0,1.0,1.0]     | 252.95M  | 4.768M   | 2344.5M(stage4.Conv2d)   |
+| RepVGG-M1 | [2,2,2,2]  | [0.75,0.75,0.75,2.5]  | 191.220M | 17.740M  | 14501.25M(stage4.Conv2d) |
+
+
+
+> Memory计算策略
+>
+> 每一次计算需要存储在片上内存的有：
+>
+> 1. 本层的weight和bias
+> 2. 卷积的输出out_conv（int32）
+> 3. 卷积输出转换为下一层输入（int8）
+>
+> relu应该不用存吧？
+
+The detail of computation can be found in [The Memory Cost computation process ](./The Memory Cost computation process.md)
+
+|      | ATLAS300(int8)-Latency(ms) | RV1126(int8)-Latency(ms) | T4(int8)-Latency(ms) | Adreno 650 GPU(fp16)-Latency(ms) | Hexagon 698 DSP(uint8)-Latency(ms) | TDA4VM(int8)-Latency(ms) | STPU(int8)-Latency(ms) | Max Memory Cost |
+| ---- | -------------------------- | ------------------------ | -------------------- | -------------------------------- | ---------------------------------- | ------------------------ | ---------------------- | --------------- |
+| A0   | 0.641636                   |                          | 0.683414             | 10.06408                         | 2.645636                           | 1.684263                 |                        | 2261.25         |
+| N0   | 0.671535                   | 4.930283                 | 0.782737             | 13.22945                         | 3.153485                           | 1.815879                 | 1.50102                | 1192.5          |
+| N1   |                            |                          |                      |                                  |                                    | 0.749081                 |                        | 245.4375        |
+| N2   | 0.547707                   | 3.260808                 |                      | 7.10899                          | 1.886929                           | 0.988788                 |                        | 490.875         |
+| M0   | 0.490182                   | 4.128485                 | 0.393848             | 7.735838                         | 2.07997                            | 1.215657                 | 0.987919               | 2344.5          |
+| M1   | 0.846596                   | 6.195939                 | 0.465677             | 15.59577                         | Failure                            | 5.205919                 | 2.016444               | 14501.25        |
+
+
+
+![The Latency Analysis on different Hardware](./pic/The_Latency_Analysis_on_different_Hardware.png)
+
+
+
